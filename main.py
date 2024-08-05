@@ -1,36 +1,103 @@
-import numpy as np
-import altair as alt
-import pandas as pd
 import streamlit as st
+import SparkApi
 
-st.header('st.write')
+from streamlit_chat import message
 
-# 样例 1
+# 以下密钥信息从控制台获取   https://console.xfyun.cn/services/bm35
+appid = "078f75e7"  # 填写控制台中获取的 APPID 信息
+api_secret = "YjU3M2Y1MmY5YmUyZmZmZmZlYWYxOGU2"  # 填写控制台中获取的 APISecret 信息
+api_key = "44a7caa1af474b8f4c0c2ba9db39e06f"  # 填写控制台中获取的 APIKey 信息
 
-st.write('Hello, *World!* :sunglasses:')
+# domain = "generalv3.5"  # Max版本
+# domain = "generalv3"       # Pro版本
+domain = "general"  # Lite版本
 
-# 样例 2
+# Spark_url = "wss://spark-api.xf-yun.com/v3.5/chat"  # Max服务地址
+# Spark_url = "wss://spark-api.xf-yun.com/v3.1/chat"  # Pro服务地址
+Spark_url = "wss://spark-api.xf-yun.com/v1.1/chat"  # Lite服务地址
 
-st.write(1234)
+text = []  # 用于存储对话内容的列表
 
-# 样例 3
 
-df = pd.DataFrame({
-     'first column': [1, 2, 3, 4],
-     'second column': [10, 20, 30, 40]
-     })
-st.write(df)
+def getText(role, content):
+    """
+    构造包含角色和内容的对话信息，并添加到对话列表中
 
-# 样例 4
+    参数：
+    role (str): 对话角色，可以是 "user"（用户）或 "assistant"（助手）
+    content (str): 对话内容
 
-st.write('Below is a DataFrame:', df, 'Above is a dataframe.')
+    返回值：
+    text (list): 更新后的对话列表
+    """
+    jsoncon = {"role": role, "content": content}
+    text.append(jsoncon)
+    return text
 
-# 样例 5
 
-df2 = pd.DataFrame(
-     np.random.randn(200, 3),
-     columns=['a', 'b', 'c'])
+def getlength(text):
+    """
+    计算对话列表中所有对话内容的字符长度之和
 
-c = alt.Chart(df2).mark_circle().encode(
-     x='a', y='b', size='c', color='c', tooltip=['a', 'b', 'c'])
-st.write(c)
+    参数：
+    text (list): 对话列表
+
+    返回值：
+    length (int): 对话内容的字符长度之和
+    """
+    length = 0
+    for content in text:
+        temp = content["content"]
+        leng = len(temp)
+        length += leng
+    return length
+
+
+def checklen(text):
+    """
+    检查对话列表中的对话内容字符长度是否超过限制（8000个字符）
+    如果超过限制，删除最早的对话内容，直到满足字符长度限制
+
+    参数：
+    text (list): 对话列表
+
+    返回值：
+    text (list): 更新后满足字符长度限制的对话列表
+    """
+    while getlength(text) > 8000:
+        del text[0]
+    return text
+
+
+if __name__ == '__main__':
+    # 在 Streamlit 网页上显示欢迎文本
+    st.markdown("#### 我是讯飞星火认知模型机器人，我可以回答您的任何问题！")
+
+    # 初始化对话历史和生成的响应列表
+    if 'generated' not in st.session_state:
+        st.session_state['generated'] = []
+    if 'past' not in st.session_state:
+        st.session_state['past'] = []
+
+    # 获取用户输入的问题
+    user_input = st.text_input("请输入您的问题:", key='input')
+
+    if user_input:
+        # 构造用户输入的对话信息
+        question = checklen(getText("user", user_input))
+
+        # 调用 SparkApi 中的函数进行问题回答
+        SparkApi.answer = ""
+        print("星火:", end="")
+        SparkApi.main(appid, api_key, api_secret, Spark_url, domain, question)
+        output = getText("assistant", SparkApi.answer)
+
+        # 将用户输入和生成的响应添加到对话历史和生成的响应列表中
+        st.session_state['past'].append(user_input)
+        st.session_state['generated'].append(str(output[1]['content']))
+
+    if st.session_state['generated']:
+        # 在网页上显示对话历史和生成的响应
+        for i in range(len(st.session_state['generated']) - 1, -1, -1):
+            message(st.session_state["generated"][i], key=str(i))
+            message(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
