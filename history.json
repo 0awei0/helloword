@@ -1,5 +1,16 @@
 {
-    "past": [],
-    "generated": [],
-    "input": ""
+    "FormSubmitter:feedback-提交": true,
+    "messages": [
+        {
+            "role": "user",
+            "content": "你好"
+        },
+        {
+            "role": "assistant",
+            "content": "你好呀！有什么我可以帮忙的吗？"
+        }
+    ],
+    "openai_model": "gpt-3.5-turbo-0125",
+    "copy_problem": "你好",
+    "copy_answer": "你好呀！有什么我可以帮忙的吗？"
 }
