@@ -1,5 +1,6 @@
 import streamlit as st
 import SparkApi
+import json
 
 from streamlit_chat import message
 
@@ -88,7 +89,7 @@ if __name__ == '__main__':
 
         # 调用 SparkApi 中的函数进行问题回答
         SparkApi.answer = ""
-        print("星火:", end="")
+        # print("星火:", end="")
         SparkApi.main(appid, api_key, api_secret, Spark_url, domain, question)
         output = getText("assistant", SparkApi.answer)
 
@@ -96,8 +97,15 @@ if __name__ == '__main__':
         st.session_state['past'].append(user_input)
         st.session_state['generated'].append(str(output[1]['content']))
 
+    # with open('history.json', 'w', encoding='utf-8') as file:
+    #     json.dump(st.session_state.to_dict(), file, ensure_ascii=False, indent=4)
+
     if st.session_state['generated']:
         # 在网页上显示对话历史和生成的响应
-        for i in range(len(st.session_state['generated']) - 1, -1, -1):
-            message(st.session_state["generated"][i], key=str(i))
-            message(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
+        # for i in range(len(st.session_state['generated']) - 1, -1, -1):
+        for i in range(0, len(st.session_state['generated']), 1):
+            # print('generate: ', st.session_state["generated"][i])
+            # print('past: ', st.session_state['past'][i])
+
+            message(st.session_state['past'][i], is_user=True, key=str(i) + '_user', allow_html=True)
+            message(st.session_state["generated"][i], key=str(i), allow_html=True)
