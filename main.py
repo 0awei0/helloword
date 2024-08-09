@@ -2,9 +2,10 @@ import streamlit as st
 import json
 
 from openai import OpenAI
+from mongdb_connect import insert_one_data
 
 st.title("聊天机器人")
-st.button("如果模型做的不好，请给我们反馈")
+st.subheader("如果模型做的不好，请给我们反馈")
 
 
 def copy_answer_and_question():
@@ -81,9 +82,11 @@ if __name__ == '__main__':
             "improve": improve
         }
         print(feedback)
-        write_files(feedback)
-
-
+        # write_files(feedback)
+        if insert_one_data(is_correct, problem, answer, improve):
+            st.sidebar.success('上传成功', icon="✅")
+        else:
+            st.sidebar.error('上传失败了，请再试一次', icon="🚨")
     else:
         with st.sidebar:
             st.write('☝️ 提交您的反馈!')
