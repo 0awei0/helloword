@@ -16,48 +16,55 @@ def copy_answer_and_question():
             if data[0].get("role") == "user" and data[1].get("role") == 'assistant':
                 st.session_state.copy_problem = data[0]['content']
                 st.session_state.copy_answer = data[1]['content']
-                print(st.session_state.copy_problem, st.session_state.copy_answer)
+                # print(st.session_state.copy_problem, st.session_state.copy_answer)
 
 
 def chat_with_gpt():
     key = 'sk-SFXiex2MCespk9H83d766aE49cCd4cFd8a5b4dEbAb728507'
     client = OpenAI(api_key=key, base_url="https://free.gpt.ge/v1/", default_headers={"x-foo": "true"})
 
+    # 初始化聊天使用的模型
     if "openai_model" not in st.session_state:
         st.session_state["openai_model"] = "gpt-3.5-turbo-0125"
 
+    # 初始化聊天记录
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
+    # 每次都刷新当前的聊天记录显示
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
+    # 如果输入框输入信息了
     if prompt := st.chat_input("请问我问题"):
+        # 用户提问也存入问答历史中
         st.session_state.messages.append({"role": "user", "content": prompt})
 
         with st.chat_message("user"):
             st.markdown(prompt)  # 显示用户输入
 
+        # 得到模型的回答并写入网页对话框
         with st.chat_message("assistant"):
             stream = client.chat.completions.create(
                 model=st.session_state["openai_model"],
                 messages=[
                     {"role": m["role"], "content": m["content"]}
                     for m in st.session_state.messages
-                ],  # messages: 上下文信息
+                ],  # messages: 上下文信息，所有的聊天记录都传进去
                 stream=True,
             )
             response = st.write_stream(stream)  # 得到回答
+            print("response: ", response)
+
+        # 这里的response是一个字符串，是模型对当前问题的回答，将其存入问答历史中
         st.session_state.messages.append({"role": "assistant", "content": response})
+        write_files()
 
 
-def write_files(user_feedback):
+def write_files():
     with open('history.json', 'w', encoding='utf-8') as file:
         json.dump(st.session_state.to_dict(), file, ensure_ascii=False, indent=4)
-
-    with open('feedback.json', 'w', encoding='utf-8') as file:
-        json.dump(user_feedback, file, ensure_ascii=False, indent=4)
 
 
 if __name__ == '__main__':
@@ -77,14 +84,6 @@ if __name__ == '__main__':
     chat_with_gpt()
 
     if submitted:
-        feedback = {
-            "is_correct": is_correct,
-            "problem": problem,
-            "answer": answer,
-            "improve": improve
-        }
-        print(feedback)
-        # write_files(feedback)
         if insert_one_data(is_correct, problem, answer, improve):
             st.success('上传成功，感谢您的反馈', icon="✅")
         else:
