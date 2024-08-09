@@ -84,9 +84,9 @@ if __name__ == '__main__':
         print(feedback)
         # write_files(feedback)
         if insert_one_data(is_correct, problem, answer, improve):
-            st.sidebar.success('上传成功', icon="✅")
+            st.success('上传成功，感谢您的反馈', icon="✅")
         else:
-            st.sidebar.error('上传失败了，请再试一次', icon="🚨")
+            st.error('上传失败了，请再试一次', icon="🚨")
     else:
         with st.sidebar:
             st.write('☝️ 提交您的反馈!')

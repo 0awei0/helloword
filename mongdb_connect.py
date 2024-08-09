@@ -59,22 +59,28 @@ def insert_many_data_test(length=100):
 
 
 def insert_one_data(is_correct, question, answer, improve):
-    client, collection = get_collection()
-    # 插入文档
-    doc = {
-        "is_correct": is_correct,
-        "question": question,
-        "answer": answer,
-        "improve": improve
-    }
-    insert_result = collection.insert_one(doc)
-    if insert_result.acknowledged:
-        print("Insert operation was acknowledged by the server.")
+    success = False
+    try:
+        client, collection = get_collection()
+        # 插入文档
+        doc = {
+            "is_correct": is_correct,
+            "question": question,
+            "answer": answer,
+            "improve": improve
+        }
+        insert_result = collection.insert_one(doc)
+        if insert_result.acknowledged:
+            success = True
+            print("Insert operation was acknowledged by the server.")
 
-    print(insert_result)
-    # 打印插入文档的 ID
-    client.close()
-    return insert_result.acknowledged
+        print(insert_result)
+        # 打印插入文档的 ID
+        client.close()
+    except Exception as e:
+        print(e)
+
+    return success
 
 
 def delete_all():
