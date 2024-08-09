@@ -19,23 +19,7 @@ def copy_answer_and_question():
                 # print(st.session_state.copy_problem, st.session_state.copy_answer)
 
 
-def chat_with_gpt():
-    key = 'sk-SFXiex2MCespk9H83d766aE49cCd4cFd8a5b4dEbAb728507'
-    client = OpenAI(api_key=key, base_url="https://free.gpt.ge/v1/", default_headers={"x-foo": "true"})
-
-    # 初始化聊天使用的模型
-    if "openai_model" not in st.session_state:
-        st.session_state["openai_model"] = "gpt-3.5-turbo-0125"
-
-    # 初始化聊天记录
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-
-    # 每次都刷新当前的聊天记录显示
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-
+def update_chat(client):
     # 如果输入框输入信息了
     if prompt := st.chat_input("请问我问题"):
         # 用户提问也存入问答历史中
@@ -55,11 +39,31 @@ def chat_with_gpt():
                 stream=True,
             )
             response = st.write_stream(stream)  # 得到回答
-            print("response: ", response)
+            # print("response: ", response)
 
         # 这里的response是一个字符串，是模型对当前问题的回答，将其存入问答历史中
         st.session_state.messages.append({"role": "assistant", "content": response})
-        write_files()
+        # write_files()
+
+
+def chat_with_gpt():
+    key = 'sk-SFXiex2MCespk9H83d766aE49cCd4cFd8a5b4dEbAb728507'
+    client = OpenAI(api_key=key, base_url="https://free.gpt.ge/v1/", default_headers={"x-foo": "true"})
+
+    # 初始化聊天使用的模型
+    if "openai_model" not in st.session_state:
+        st.session_state["openai_model"] = "gpt-3.5-turbo-0125"
+
+    # 初始化聊天记录
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+
+    # 每次都刷新当前的聊天记录显示
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    update_chat(client)
 
 
 def write_files():
