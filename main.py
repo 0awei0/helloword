@@ -74,6 +74,8 @@ if __name__ == '__main__':
 
             submitted = st.form_submit_button('提交')
 
+    chat_with_gpt()
+
     if submitted:
         feedback = {
             "is_correct": is_correct,
@@ -90,4 +92,3 @@ if __name__ == '__main__':
     else:
         with st.sidebar:
             st.write('☝️ 提交您的反馈!')
-    chat_with_gpt()
